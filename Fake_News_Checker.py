@@ -36,7 +36,7 @@ tokenizer, model = load_model()
 
 st.title("📰 Fake News Detector")
 title = st.text_input("Headline")
-body  = st.text_area("Article text")
+body  = st.text_area("Article text", height=300)
 
 if st.button("Check"):
     text = clean_text(title, body)
