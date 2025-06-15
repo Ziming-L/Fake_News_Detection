@@ -43,7 +43,34 @@ def set_background_with_overlay(image_file, overlay_rgba="rgba(0, 0, 0, 0.5)"):
     # read & base64‑encode your image
     img_bytes = Path(image_file).read_bytes()
     b64 = base64.b64encode(img_bytes).decode()
-    st.markdown("""
+    st.markdown(
+        f"""
+        <style>
+          /* 1. Background image */
+          .stApp {{
+              background: url("data:image/jpg;base64,{b64}") center/cover no-repeat fixed;
+          }}
+          /* 2. Semi‑transparent overlay */
+          .stApp::before {{
+              content: "";
+              position: fixed;
+              top: 0; left: 0; right: 0; bottom: 0;
+              background-color: {overlay_rgba};
+              z-index: 0;
+          }}
+          /* 3. Make all Streamlit containers sit above the overlay */
+          .main, .css-1hynsf2, .block-container {{
+              position: relative;
+              z-index: 1;
+          }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+set_background_with_overlay("news_detection_background.jpg", overlay_rgba="rgba(0,0,0,0.6)")
+
+st.markdown("""
         <style>
         /* Style for text input and text area */
         .stTextInput > div > div > input,
@@ -69,8 +96,6 @@ def set_background_with_overlay(image_file, overlay_rgba="rgba(0, 0, 0, 0.5)"):
         }
         </style>
     """, unsafe_allow_html=True)
-
-set_background_with_overlay("news_detection_background.jpg", overlay_rgba="rgba(0,0,0,0.6)")
 
 # build website app
 st.title("📰 Fake News Detector")
