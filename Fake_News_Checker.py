@@ -4,6 +4,8 @@ from transformers import RobertaForSequenceClassification, RobertaTokenizer, Tra
 import torch
 import torch.nn.functional as F
 import numpy as np
+import base64
+from pathlib import Path
 
 # preprocessing 
 url_re = re.compile(r"https?://\S+|www\.\S+|pic\.twitter\.com/\S+")
@@ -36,20 +38,25 @@ def load_model():
 
 tokenizer, model = load_model()
 
-def set_background(gif_url):
+# change background
+def set_background_local(image_file: str):
+    img_bytes = Path(image_file).read_bytes()
+    b64 = base64.b64encode(img_bytes).decode()
     st.markdown(
         f"""
         <style>
         .stApp {{
-            background: url("{gif_url}") center / cover no-repeat fixed;
+            background-image: url("data:image/jpg;base64,{b64}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
         }}
         </style>
         """,
         unsafe_allow_html=True
     )
 
-GIF_URL = "https://i.pinimg.com/originals/d4/81/f3/d481f3c72e283309071f79e01b05c06d.gif"
-set_background(GIF_URL)
+set_background_local("news_detection_background.jpg")
 
 # build website app
 st.title("📰 Fake News Detector")
