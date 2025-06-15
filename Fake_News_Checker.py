@@ -1,8 +1,9 @@
 import re
 import streamlit as st
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from transformers import RobertaForSequenceClassification, RobertaTokenizer, Trainer
 import torch
 import torch.nn.functional as F
+import numpy as np
 
 url_re = re.compile(r"https?://\S+|www\.\S+|pic\.twitter\.com/\S+")
 whitespace_re = re.compile(r"\s+")
@@ -22,13 +23,15 @@ def clean_text(title, body):
     return whitespace_re.sub(" ", no_urls).strip()
 
 @st.cache_resource
-def load_model():
-    tokenizer = AutoTokenizer.from_pretrained("Model", use_fast=True)
-    model = AutoModelForSequenceClassification.from_pretrained("Model")
-    model.eval()
-    return tokenizer, model
+def load_trainer():
+    tokenizer = RobertaTokenizer.from_pretrained("./Model")
+    model = RobertaForSequenceClassification.from_pretrained("./Model")
+    model.config.id2label = {0: "FAKE", 1: "REAL"}
+    model.config.label2id = {"FAKE": 0, "REAL": 1}
+    return Trainer(model=model, tokenizer=tokenizer)
 
-tokenizer, model = load_model()
+trainer = load_trainer()
+tokenizer = trainer.tokenizer
 
 st.title("📰 Fake News Detector")
 title = st.text_input("Headline")
@@ -42,17 +45,18 @@ if st.button("Check"):
         padding="max_length", 
         truncation=True, 
         max_length=512, 
-        return_tensors="pt"
+        return_tensors="np"
     )
 
-    with torch.no_grad():
-        logits = model(**inputs).logits
-        probs = F.softmax(logits, dim=-1).squeeze().tolist()
+    dummy_dataset = {"input_ids": inputs["input_ids"],
+                     "attention_mask": inputs["attention_mask"]}
     
-    pred_idx = int(torch.argmax(logits, dim=-1))
-    labels = model.config.id2label
-    label = labels[pred_idx]
-    conf = probs[pred_idx] * 100
+    outputs = trainer.predict(dummy_dataset)
+    logits  = outputs.predictions
+    probs   = F.softmax(torch.from_numpy(logits), dim=-1).numpy().squeeze()
+    pred_i  = int(np.argmax(probs))
+    label   = trainer.model.config.id2label[pred_i]
+    conf    = probs[pred_i] * 100
 
     st.markdown(f"**Prediction:** {'✅ REAL' if label=='REAL' else '❌ FAKE'}")
     st.markdown(f"**Confidence:** {conf:.1f}%")
