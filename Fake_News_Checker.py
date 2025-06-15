@@ -36,6 +36,25 @@ def load_model():
 
 tokenizer, model = load_model()
 
+# change background based on label and confidence
+def set_bg_color(label, confidence):
+    # confidence: 0 to 100
+    opacity = confidence / 100 * 0.3  # max 0.3 opacity, adjust as needed
+    if label == "REAL":
+        color = f"rgba(0, 255, 0, {opacity})"  # green with variable opacity
+    else:
+        color = f"rgba(255, 0, 0, {opacity})"  # red with variable opacity
+
+    css = f"""
+    <style>
+    .stApp {{
+        background-color: {color};
+        transition: background-color 0.5s ease;
+    }}
+    </style>
+    """
+    st.markdown(css, unsafe_allow_html=True)
+
 # build website app
 st.title("📰 Fake News Detector")
 title = st.text_input("Headline")
@@ -59,5 +78,7 @@ if st.button("Check"):
     label  = model.config.id2label[pred_i]
     conf   = probs[pred_i] * 100
 
+    set_bg_color(label, conf)
+    
     st.markdown(f"**Prediction:** {'✅ REAL' if label=='REAL' else '❌ FAKE'}")
     st.markdown(f"**Confidence:** {conf:.1f}%")
