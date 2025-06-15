@@ -23,15 +23,16 @@ def clean_text(title, body):
     return whitespace_re.sub(" ", no_urls).strip()
 
 @st.cache_resource
-def load_trainer():
+def load_model():
     tokenizer = RobertaTokenizer.from_pretrained("./Model")
     model = RobertaForSequenceClassification.from_pretrained("./Model")
     model.config.id2label = {0: "FAKE", 1: "REAL"}
     model.config.label2id = {"FAKE": 0, "REAL": 1}
-    return Trainer(model=model, tokenizer=tokenizer)
+    model.eval()
+    return tokenizer, model
 
-trainer = load_trainer()
-tokenizer = trainer.tokenizer
+
+tokenizer, model = load_model()
 
 st.title("📰 Fake News Detector")
 title = st.text_input("Headline")
@@ -45,18 +46,15 @@ if st.button("Check"):
         padding="max_length", 
         truncation=True, 
         max_length=512, 
-        return_tensors="np"
+        return_tensors="pt"
     )
-
-    dummy_dataset = {"input_ids": inputs["input_ids"],
-                     "attention_mask": inputs["attention_mask"]}
     
-    outputs = trainer.predict(dummy_dataset)
-    logits  = outputs.predictions
-    probs   = F.softmax(torch.from_numpy(logits), dim=-1).numpy().squeeze()
-    pred_i  = int(np.argmax(probs))
-    label   = trainer.model.config.id2label[pred_i]
-    conf    = probs[pred_i] * 100
+    with torch.no_grad():
+        logits = model(**inputs).logits
+        probs  = F.softmax(logits, dim=-1).squeeze().cpu().numpy()
+    pred_i = int(np.argmax(probs))
+    label  = model.config.id2label[pred_i]
+    conf   = probs[pred_i] * 100
 
     st.markdown(f"**Prediction:** {'✅ REAL' if label=='REAL' else '❌ FAKE'}")
     st.markdown(f"**Confidence:** {conf:.1f}%")
