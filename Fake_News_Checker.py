@@ -4,8 +4,6 @@ from transformers import RobertaForSequenceClassification, RobertaTokenizer, Tra
 import torch
 import torch.nn.functional as F
 import numpy as np
-import base64
-from pathlib import Path
 
 # preprocessing 
 url_re = re.compile(r"https?://\S+|www\.\S+|pic\.twitter\.com/\S+")
