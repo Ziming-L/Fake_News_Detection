@@ -102,6 +102,38 @@ st.title("📰 Fake News Detector")
 title = st.text_input("Headline")
 body  = st.text_area("Article text", height=300)
 
+st.markdown("""
+    <style>
+    /* Make main text elements white */
+    .stApp, .stMarkdown, .stTextInput label, .stTextArea label, .stButton, .stTitle {
+        color: white !important;
+    }
+
+    /* Make Streamlit title and headers white */
+    h1, h2, h3, h4, h5, h6 {
+        color: white !important;
+    }
+
+    /* Ensure markdown output text is white */
+    .markdown-text-container {
+        color: white !important;
+    }
+
+    /* Optional: make buttons and results stand out */
+    .stButton>button {
+        background-color: #008CBA;
+        color: white;
+        border-radius: 10px;
+    }
+
+    /* Optional: fake news prediction result text */
+    .stMarkdown strong {
+        color: #ffffff;
+        font-size: 1.1rem;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 if st.button("Check"):
     text = clean_text(title, body)
 
