@@ -57,6 +57,18 @@ def set_bg_color(label, confidence):
 
 # build website app
 st.title("📰 Fake News Detector")
+
+# set alarm
+st.markdown(
+    """
+    <small style="color:gray;">
+    ⚠️ <em>Note: This AI model provides predictions based on learned patterns but may not be 100% accurate as described. 
+    Use it as a guide, not a definitive judgment.</em>
+    </small>
+    """,
+    unsafe_allow_html=True
+)
+
 title = st.text_input("Headline")
 body  = st.text_area("Article text", height=300)
 
@@ -79,6 +91,6 @@ if st.button("Check"):
     conf   = probs[pred_i] * 100
 
     set_bg_color(label, conf)
-    
+
     st.markdown(f"**Prediction:** {'✅ REAL' if label=='REAL' else '❌ FAKE'}")
     st.markdown(f"**Confidence:** {conf:.1f}%")
