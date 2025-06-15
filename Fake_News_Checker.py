@@ -5,6 +5,7 @@ import torch
 import torch.nn.functional as F
 import numpy as np
 
+# preprocessing 
 url_re = re.compile(r"https?://\S+|www\.\S+|pic\.twitter\.com/\S+")
 whitespace_re = re.compile(r"\s+")
 label_prefix_re = re.compile(
@@ -22,6 +23,7 @@ def clean_text(title, body):
     no_urls = url_re.sub("<URL>", join)
     return whitespace_re.sub(" ", no_urls).strip()
 
+# load model
 @st.cache_resource
 def load_model():
     tokenizer = RobertaTokenizer.from_pretrained("./Model")
@@ -34,6 +36,22 @@ def load_model():
 
 tokenizer, model = load_model()
 
+def set_background(gif_url):
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background: url("{gif_url}") center / cover no-repeat fixed;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+GIF_URL = "https://i.pinimg.com/originals/d4/81/f3/d481f3c72e283309071f79e01b05c06d.gif"
+set_background(GIF_URL)
+
+# build website app
 st.title("📰 Fake News Detector")
 title = st.text_input("Headline")
 body  = st.text_area("Article text", height=300)
