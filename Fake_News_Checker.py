@@ -1,6 +1,6 @@
 import re
 import streamlit as st
-from transformers import RobertaForSequenceClassification, RobertaTokenizer, Trainer
+from transformers import RobertaForSequenceClassification, RobertaTokenizer
 import torch
 import torch.nn.functional as F
 import numpy as np
@@ -33,7 +33,6 @@ def load_model():
     model.eval()
     return tokenizer, model
 
-
 tokenizer, model = load_model()
 
 # change background based on label and confidence
@@ -58,7 +57,7 @@ def set_bg_color(label, confidence):
 # build website app
 st.title("📰 Fake News Detector")
 
-# set alarm
+# set disclaimer
 st.markdown(
     """
     <small style="color:gray;">
